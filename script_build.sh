@@ -11,7 +11,7 @@ sfuser="exampleuser"
 
 mega="no"
 megamail="example@example.com"
-megapass=""examplaepassword"
+megapass="examplaepassword"
 
 # rarely changed variables
 date="$(date '+%Y%m%d')"

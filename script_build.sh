@@ -6,7 +6,7 @@ username=arian
 #upload
 sourceforge="yes"
 sfpass="examplepassword"
-sfpath="/home/pfs/project/havoc-os/"$device""
+sfpath="/home/pfs/project/havoc-os/"$device"
 sfuser="exampleuser"
 
 mega="no"
@@ -79,7 +79,9 @@ make "$target_command"
 if [ "$mega" = "yes" ]
 then
 echo -e ${cya}"Uploading to mega.nz"
-megaput -u "$megamail" -p "$megapass" out/target/product/"$device"/"$rom"-$date-"$device"-"$buildtype".zip
+mega-login "$megamail" "$megapass"
+mega-put out/target/product/"$device"/"$rom"-$date-"$device"-"$buildtype".zip /"$rom"/"$device"/"$rom"-$date-"$device"-"$buildtype".zip
+mega-logout
 wait
 echo -e ${grn}"Uploaded file successfully"
 fi

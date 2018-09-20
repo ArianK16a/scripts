@@ -81,7 +81,7 @@ then
 echo -e ${cya}"Uploading to mega.nz"
 megaput -u "$megamail" -p "$megapass" out/target/product/"$device"/"$rom"-$date-"$device"-"$buildtype".zip
 wait
-echo -e ${grn}"Uploaded file succesfully"
+echo -e ${grn}"Uploaded file successfully"
 fi
 
 if [ "$sourceforge" = "yes" ];
@@ -89,6 +89,5 @@ then
 echo -e ${cya}"Uploading to official sourceforge"
 sshpass -p "$sfpass" scp out/target/product/"$device"/"$rom"-$date-"$device"-"$buildtype".zip "$sfuser"@frs.sourceforge.net:"$sfpath"
 wait
-echo -e ${grn}"Uploaded file succesfully"
+echo -e ${grn}"Uploaded file successfully"
 fi
-

@@ -49,7 +49,7 @@ ccache -C
 export USE_CCACHE=1
 prebuilts/misc/linux-x86/ccache/ccache -M 35G
 wait
-echo -e ${grn}"CCACHE Cleared"${txtrst};
+echo -e ${red}"CCACHE Cleared"${txtrst};
 fi
 
 # Its Clean Time
@@ -57,14 +57,14 @@ if [ "$make_clean" = "yes" ];
 then
 make clean && make clobber
 wait
-echo -e ${cya}"out dir from your repo deleted"${txtrst};
+echo -e ${red}"out dir from your repo deleted"${txtrst};
 fi
 
 if [ "$make_clean" = "dirty" ];
 then
 make installclean
 wait
-echo -e ${cya}"deleted Images and staging directories"${txtrst};
+echo -e ${red}"deleted Images and staging directories"${txtrst};
 fi
 
 # Ubuntu 18.04

@@ -4,7 +4,7 @@ device="sagit"
 username=arian
 
 #upload
-sourceforge="yes"
+sourceforge="no"
 sfpass="examplepassword"
 sfpath="/home/pfs/project/havoc-os/"$device"
 sfuser="exampleuser"
@@ -18,11 +18,11 @@ megapath=/"$rom"/"$device"/"$rom"-$date-"$device"-"$buildtype".zip
 date="$(date '+%Y%m%d')"
 use_ccache="yes"
 make_clean="yes"
-lunch_command="havoc"
-target_command="otapackage"
-buildtype="Official"
-romtype="HAVOC"
-rom="Havoc-OS-v2.0"
+lunch_command="aosp"
+target_command="mka aex"
+buildtype="ALPHA"
+romtype="AEX"
+rom="AospExtended-v6.0"
 
 # Colors makes things beautiful
 export TERM=xterm

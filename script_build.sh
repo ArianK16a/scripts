@@ -12,6 +12,7 @@ sfuser="exampleuser"
 mega="no"
 megamail="example@example.com"
 megapass="examplaepassword"
+megapath=/"$rom"/"$device"/"$rom"-$date-"$device"-"$buildtype".zip
 
 # rarely changed variables
 date="$(date '+%Y%m%d')"
@@ -56,7 +57,14 @@ if [ "$make_clean" = "yes" ];
 then
 make clean && make clobber
 wait
-echo -e ${cya}"OUT dir from your repo deleted"${txtrst};
+echo -e ${cya}"out dir from your repo deleted"${txtrst};
+fi
+
+if [ "$make_clean" = "dirty" ];
+then
+make installclean
+wait
+echo -e ${cya}"deleted Images and staging directories"${txtrst};
 fi
 
 # Ubuntu 18.04
@@ -80,7 +88,7 @@ if [ "$mega" = "yes" ]
 then
 echo -e ${cya}"Uploading to mega.nz"
 mega-login "$megamail" "$megapass"
-mega-put out/target/product/"$device"/"$rom"-$date-"$device"-"$buildtype".zip /"$rom"/"$device"/"$rom"-$date-"$device"-"$buildtype".zip
+mega-put out/target/product/"$device"/"$rom"-$date-"$device"-"$buildtype".zip "$megapath"
 mega-logout
 wait
 echo -e ${grn}"Uploaded file successfully"

@@ -1,28 +1,25 @@
 #!/bin/bash
 #config
-device="sagit"
+dvice="sagit"
 username=arian
 
 #upload
-sourceforge="yes"
-sfpass="examplepassword"
-sfpath="/home/pfs/project/havoc-os/"$device"
-sfuser="exampleuser"
+# sourceforge
 
-mega="no"
-megamail="example@example.com"
-megapass="examplaepassword"
-megapath=/"$rom"/"$device"/"$rom"-$date-"$device"-"$buildtype".zip
+#mega="no"
+#megamail="example@example.com"
+#megapass="examplaepassword"
+#megapath=/"$rom"/"$device"/"$rom"-$date-"$device"-"$buildtype".zip
 
 # rarely changed variables
 date="$(date '+%Y%m%d')"
 use_ccache="yes"
-make_clean="yes"
-lunch_command="havoc"
-target_command="otapackage"
-buildtype="Official"
-romtype="HAVOC"
-rom="Havoc-OS-v2.0"
+make_clean="dirty"
+lunch_command="aosp"
+target_command="aex"
+buildtype="ALPHA"
+romtype="AEX"
+rom="AospExtended-v6.0"
 
 # Colors makes things beautiful
 export TERM=xterm
@@ -76,28 +73,29 @@ export LC_ALL=C
 
 repo sync --force-sync
 . build/envsetup.sh
+. 2picks.sh
 export "$romtype"_BUILD_TYPE="$buildtype"
-lunch "$lunch_command"_"$device"-userdebug
-make "$target_command"
+lunch "$lunch_command"_"$dvice"-userdebug
+mka "$target_command"
 
 ###############################################
 ###                  Upload                 ###
 ###############################################
 
-if [ "$mega" = "yes" ]
-then
-echo -e ${cya}"Uploading to mega.nz"
-mega-login "$megamail" "$megapass"
-mega-put out/target/product/"$device"/"$rom"-$date-"$device"-"$buildtype".zip "$megapath"
-mega-logout
-wait
-echo -e ${grn}"Uploaded file successfully"
-fi
+#if [ "$mega" = "yes" ]
+#then
+#echo -e ${cya}"Uploading to mega.nz"
+#mega-login "$megamail" "$megapass"
+#mega-put out/target/product/"$dvice"/"$rom"-$date-"$dvice"-"$buildtype".zip "$megapath"
+#mega-logout
+#wait
+#echo -e ${grn}"Uploaded file successfully"
+#fi
 
 if [ "$sourceforge" = "yes" ];
 then
 echo -e ${cya}"Uploading to official sourceforge"
-sshpass -p "$sfpass" scp out/target/product/"$device"/"$rom"-$date-"$device"-"$buildtype".zip "$sfuser"@frs.sourceforge.net:"$sfpath"
+sshpass -p "$sfpass" scp out/target/product/"$dvice"/"$rom"-$date-"$dvice"-"$buildtype".zip "$sfuser"@frs.sourceforge.net:"$sfpath"
 wait
 echo -e ${grn}"Uploaded file successfully"
 fi

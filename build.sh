@@ -469,7 +469,86 @@ function compile_rom() {
   fi
 }
 
+function telegram_setup() {
+  while :; do
+    echo
+		echo -e "${BLUE}Current TG Bot settings: ${NC}"
+		echo
+		echo -e "${GREEN}User ID - ${NC}${tg_user_id}"
+		echo -e "${GREEN}Run bot on script start-up - ${NC}${tgbot_autostart}"
+		echo
+		echo -e "${BLUE}Commands avaible: ${NC}"
+		echo -e "${CYAN}[Q] - for go back \n[S] - for changing current settings"
+		echo -ne "${BLUE}Your command: ${NC}"
+		read curr_cmd
 
+		case "$curr_cmd" in
+			S | s ) edit_tgbot_settings ;;
+			Q | q ) break ;;
+		esac
+	done
+}
+
+function tgbot_start() {
+	cd $tgbot_path
+	source $tgbot_path/bashbot.sh source
+	bash $tgbot_path/bashbot.sh start && use_tgbot="true"
+	cd $script_dir
+}
+
+function tgbot_kill() {
+	proxy_set
+	cd $tgbot_path
+	bash $tgbot_path/bashbot.sh kill && use_tgbot="false"
+	cd $script_dir
+	proxy_unset
+}
+
+function edit_tgbot_settings() {
+	echo "TG Bot settings"
+	echo
+	echo -ne "${BLUE}Enter your user ID: ${NC}"
+	read tg_user_id
+	echo -ne "${BLUE}Do you want to run bot on script start-up? [Y/n]: ${NC}"
+	read tgbot_autostart
+	if [ "$tgbot_autostart" = "y" ] || [ "$tgbot_autostart" = "Y" ]; then
+		tgbot_autostart="true"
+	else
+		tgbot_autostart="false"
+	fi
+	echo -e "${CYAN}Ok, done, please review your settings:${NC}"
+	echo
+	echo -e "${BLUE}User ID - ${NC}${tg_user_id}"
+	echo -e "${BLUE}Run bot on script start-up - ${NC}${tgbot_autostart}"
+	echo
+	echo -ne "${BLUE}Save changes? [y/N]: ${NC}"
+	read save
+	if [ "$save" = "y" ] || [ "$save" = "Y" ]; then
+		echo "Saving settings..."
+    sed --in-place '/tg_user_id/d' $script_dir/tgbot_conf.txt
+    echo "tg_user_id=$tg_user_id" >> $script_dir/tgbot_conf.txt
+    sed --in-place '/tgbot_autostart/d' $script_dir/tgbot_conf.txt
+    echo "tgbot_autostart=$tgbot_autostart" >> $script_dir/tgbot_conf.txt
+		echo "Settings saved!"
+	else
+		echo "Settings don't changed!"
+		. $script_dir/tgbot_conf.txt
+	fi
+}
+
+function send_tg_notification() {
+	if [ "$use_tgbot" = "true" ]; then
+		cd $tgbot_path
+		send_text ${tg_user_id} "markdown_parse_mode${tg_msg}"
+	fi
+}
+
+function send_tg_file() {
+	if [ "$use_tgbot" = "true" ]; then
+		cd $tgbot_path
+		send_file "${tg_user_id}" "$tg_file"
+	fi
+}
 
 
 
@@ -500,5 +579,19 @@ else
 
   source $script_dir/${curr_conf}
 fi
+
+#TG Bot config
+#Autostart TGBot
+cd $script_dir
+if [ "$tgbot_autostart" = "true" ]; then
+	tgbot_start
+fi
+
+if [ ! -f $script_dir/tgbot_conf.txt ];then
+	echo -e "Creating tgbot_conf.txt..."
+	touch $script_dir/tgbot_conf.txt
+fi
+
+source $script_dir/tgbot_conf.txt
 
 start

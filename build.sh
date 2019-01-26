@@ -13,7 +13,7 @@ cyan='\033[0;36m'
 inverse='\033[7m'
 nc='\033[0m'
 
-function branding() {
+function header() {
   clear
      echo -e "${red} ____        _ _     _ ____            _       _   ${nc}"
    echo -e "${green}| __ ) _   _(_) | __| / ___|  ___ _ __(_)_ __ | |_ ${nc}"
@@ -30,7 +30,7 @@ fi
 
 function start() {
   while :; do
-    branding
+    header
     echo -e "${green}You are on : ${nc}${red}$rom_name${nc}"
     echo -e "\n${cyan}[1] Setup${nc}"
     echo -e "\n${cyan}[2] Tools${nc}"
@@ -58,7 +58,7 @@ function start() {
 
 function setup() {
   while :; do
-    branding
+    header
     echo -e "${green}You are on : ${nc}${red}$rom_name${nc}"
     echo -e "\n${inverse}Setup${nc}"
     echo -e "\n${cyan}[1] ROM${nc}"
@@ -83,7 +83,7 @@ function setup() {
 }
 
 function setup_rom() {
-  branding
+  header
   echo "Setup - ROM"
   echo -ne "\nYour Devices Codename : "
   read device_codename
@@ -100,7 +100,7 @@ function setup_rom() {
   echo -e "\nSave Settings? [y/n] : "
   read save_setup_rom
   if [ "$save_setup_rom" = "y" ] || [ "$save_setup_rom" = "Y" ]; then
-    echo "\nCleaning currect Config"
+    echo "\ncleaning currect Config"
     sed --in-place '/device_codename/d' $script_dir/${curr_conf}
     sed --in-place '/rom_name/d' $script_dir/${curr_conf}
     sed --in-place '/rom_dir/d' $script_dir/${curr_conf}
@@ -116,11 +116,11 @@ function setup_rom() {
 }
 
 function setup_build() {
-	branding
+	header
   echo "Setup - Build"
   echo -ne "\nSync the repo before build? [y/n] : "
   read build_sync
-  echo -ne "\nClean the out before build? [y/n] : "
+  echo -ne "\nclean the out before build? [y/n] : "
   read build_clean
   if [ "$build_clean" = "y" ]; then
    echo -ne "    [1]installclean or [2]clobber? : "
@@ -169,7 +169,7 @@ function setup_build() {
   read save_setup_build
 
   if [ "$save_setup_build" = "y" ] || [ "$save_setup_build" = "Y" ]; then
-    echo "\nCleaning currect Config"
+    echo "\ncleaning currect Config"
     sed --in-place '/build_sync/d' $script_dir/${curr_conf}
     sed --in-place '/build_clean/d' $script_dir/${curr_conf}
     sed --in-place '/build_clean_command/d' $script_dir/${curr_conf}
@@ -216,7 +216,7 @@ function del_conf() {
 
 function show_config_settings() {
 while :; do
-  branding
+  header
 	echo -e "${blue}Change script config"
 	echo -e "${cyan}Current config: ${rom_name}${green}"
 	N="1"
@@ -304,7 +304,7 @@ function setup_upload() {
     echo -ne "\nWhere should the File get placed? : "
     read sf_path
 
-    echo -e "${RED}Review your Settings!${NC}"
+    echo -e "${RED}Review your Settings!${nc}"
     echo -e "Username=$sf_user"
     if [ "$ssh_keys" = "n" ] || [ "$ssh_keys" = "N" ]; then
       echo -e "Password=$sf_pass"
@@ -314,7 +314,7 @@ function setup_upload() {
     echo -e "sf_project=$sf_project"
     echo -e "sf_path=$sf_path"
 
-    echo -ne "${BLUE}Do you want to save this? [y/n] : ${NC}"
+    echo -ne "${blue}Do you want to save this? [y/n] : ${nc}"
     read save_setup_sf
     if [ "$save_setup_sf" = "y" ] || [ "$save_setup_sf" = "Y" ]; then
       sed --in-place '/upload/d' $script_dir/${curr_conf}
@@ -342,12 +342,12 @@ function setup_upload() {
      echo -ne "\nWhere should the File get placed? : "
      read mega_path
 
-     echo -e "${RED}Review your Settings!${NC}"
+     echo -e "${RED}Review your Settings!${nc}"
      echo -e "mega_user=$mega_user"
      echo -e "mega_pass=$mega_pass"
      echo -e "mega_path=$mega_path"
 
-     echo -ne "${BLUE}Do you want to save this? [yes/no] : ${NC}"
+     echo -ne "${blue}Do you want to save this? [yes/no] : ${nc}"
      read save_setup_mega
      if [[ "$save_setup_mega" = "yes" ]]; then
        sed --in-place '/upload/d' $script_dir/${curr_conf}
@@ -368,17 +368,25 @@ function setup_upload() {
 function upload() {
   cd $rom_dir
   source "$script_dir"/${curr_conf}
-  zip_path="$OUT/$TARGET_PACKAGE"
-  zip_name=$( basename "$zip_path" )
+  date=$(date '+%Y%m')
+  zip_path=$(ls $OUT/*.zip | grep "$date")
+  zip_name=$(basename "$zip_path")
+  echo "zip_path=$zip_path"
+  echo "zip_name=$zip_name"
+
+
+  changelog=$(ls $OUT/*.txt | grep Changelog)
+  tg_file=$changelog
+  send_tg_file
   if [ "$upload" = "sf" ]; then
     echo -e "Uploading to $sf_project/$sf_path on sourceforge"
-    tg_msg="$zip_name is uploading to $sf_project/sf_path on sourceforge"
+    tg_msg="$zip_name is uploading to $sf_project/$sf_path on sourceforge"
     send_tg_notification
     cd $rom_dir
     if [ "$ssh_keys" = "y" ] || [ "$ssh_keys" = "Y" ]; then
-      scp "$zip_path" "$sfuser"@frs.sourceforge.net:/home/frs/project/"$sf_project"/
+      scp "$zip_path" "$sf_user"@frs.sourceforge.net:/home/frs/project/"$sf_project"/"$sf_path"
     else
-      sshpass -p "$sf_pass" scp "$zip_path" "$sfuser"@frs.sourceforge.net:/home/frs/project/"$sf_project"/"$sf_path"
+      sshpass -p "$sf_pass" scp "$zip_path" "$sf_user"@frs.sourceforge.net:/home/frs/project/"$sf_project"/"$sf_path"
     fi
     sflink="https://sourceforge.net/projects/$sf_project/files/$sf_path/$zip_name/download"
     tg_msg="*$zip_name is up!* It can be downloaded [here]($sflink)"
@@ -398,6 +406,7 @@ function upload() {
     send_tg_notification
     cd $script_dir
   fi
+
 }
 
 function sync() {
@@ -419,19 +428,22 @@ function clean() {
 
 function tools() {
   while :; do
-    branding
+    header
     echo -e "${green}You are on : ${nc}${red}$rom_name${nc}"
     echo -e "\n${cyan}[1] Sync${nc}"
     echo -e "${yellow}[2] make installclean${nc}"
     echo -e "${red}[3] make clean${nc}"
+    echo -e "${green}[4] Test telegram${nc}"
+    echo -e "${cyan}[5] Upload${nc}"
     echo -e "\n${blue}[Q] Quit${nc}"
-    echo -ne "${purple}[1-3/Q] : ${nc}"
+    echo -ne "${purple}[1-5/Q] : ${nc}"
     read choice_tools
     case $choice_tools in
       1 ) sync;;
       2 ) installclean;;
       3 ) clean;;
       4 ) telegram_test;;
+      5 ) upload;;
       q | Q ) start;;
     esac
   done
@@ -473,20 +485,26 @@ function compile_rom() {
   else
     brunch $device_codename
   fi
+  zip_name=$"AospExtended-$(EXTENDED_VERSION)-$(TARGET_DEVICE)-$(EXTENDED_BUILD_DATE)-$(EXTENDED_BUILD_TYPE).zip"
+  zip_path="$OUT/$zip_name"
+
+  echo "zip_name=$zip_name"
+  echo "zip_path=$zip_path"
+
 }
 
 function telegram_setup() {
   while :; do
-    branding
+    header
     echo
-		echo -e "${BLUE}Current TG Bot settings: ${NC}"
+		echo -e "${blue}Current TG Bot settings: ${nc}"
 		echo
-		echo -e "${GREEN}User ID - ${NC}${tg_user_id}"
-		echo -e "${GREEN}Run bot on script start-up - ${NC}${tgbot_autostart}"
+		echo -e "${GREEN}User ID - ${nc}${tg_user_id}"
+		echo -e "${GREEN}Run bot on script start-up - ${nc}${tgbot_autostart}"
 		echo
-		echo -e "${BLUE}Commands avaible: ${NC}"
+		echo -e "${blue}Commands avaible: ${nc}"
 		echo -e "${CYAN}[Q] - for go back \n[S] - for changing current settings"
-		echo -ne "${BLUE}Your command: ${NC}"
+		echo -ne "\n${blue}Your command: ${nc}"
 		read curr_cmd
 
 		case "$curr_cmd" in
@@ -514,21 +532,21 @@ function tgbot_kill() {
 function edit_tgbot_settings() {
 	echo "TG Bot settings"
 	echo
-	echo -ne "${BLUE}Enter your user ID: ${NC}"
+	echo -ne "${blue}Enter your user ID: ${nc}"
 	read tg_user_id
-	echo -ne "${BLUE}Do you want to run bot on script start-up? [Y/n]: ${NC}"
+	echo -ne "${blue}Do you want to run bot on script start-up? [Y/n]: ${nc}"
 	read tgbot_autostart
 	if [ "$tgbot_autostart" = "y" ] || [ "$tgbot_autostart" = "Y" ]; then
 		tgbot_autostart="true"
 	else
 		tgbot_autostart="false"
 	fi
-	echo -e "${CYAN}Ok, done, please review your settings:${NC}"
+	echo -e "${cyan}Ok, done, please review your settings:${nc}"
 	echo
-	echo -e "${BLUE}User ID - ${NC}${tg_user_id}"
-	echo -e "${BLUE}Run bot on script start-up - ${NC}${tgbot_autostart}"
+	echo -e "${blue}User ID - ${nc}${tg_user_id}"
+	echo -e "${blue}Run bot on script start-up - ${nc}${tgbot_autostart}"
 	echo
-	echo -ne "${BLUE}Save changes? [y/N]: ${NC}"
+	echo -ne "${blue}Save changes? [y/N]: ${nc}"
 	read save
 	if [ "$save" = "y" ] || [ "$save" = "Y" ]; then
 		echo "Saving settings..."

@@ -34,7 +34,7 @@ function start() {
     echo -e "${green}You are on : ${nc}${red}$rom_name${nc}"
     echo -e "\n${cyan}[1] Setup${nc}"
     echo -e "\n${cyan}[2] Tools${nc}"
-    echo -e "\n${blue"}[3] Build${nc}"
+    echo -e "\n${blue}[B] Build${nc}"
     echo -e "\n${red}[Q] Quit${nc}"
     echo -ne "\n${purple}(i)Please enter a choice[1-2/B/Q]:${nc}"
 
@@ -42,6 +42,7 @@ function start() {
     case $choice in
         1 ) setup;;
         2 ) tools;;
+        b | B ) build;;
         Q | q )
           clear
           echo -e "${cyan}  ____                 _ _                "
@@ -63,7 +64,8 @@ function setup() {
     echo -e "\n${cyan}[1] ROM${nc}"
     echo -e "${blue}[2] Building${nc}"
     echo -e "${yellow}[3] Upload${nc}"
-    echo -e "${green}[4] Profiles"
+    echo -e "${green}[4] Profiles${nc}"
+    echo -e "${cyan}[5] Telegram${nc}"
     echo -e "${red}[Q] Quit${nc}"
     echo -ne "\n${purple}(i)Please enter a choice[1-4/Q]:${nc}"
 
@@ -74,6 +76,7 @@ function setup() {
       2 ) setup_build;;
       3 ) setup_upload;;
       4 ) show_config_settings;;
+      5 ) telegram_setup;;
       q | Q ) start;;
     esac
   done
@@ -428,6 +431,7 @@ function tools() {
       1 ) sync;;
       2 ) installclean;;
       3 ) clean;;
+      4 ) telegram_test;;
       q | Q ) start;;
     esac
   done
@@ -450,11 +454,12 @@ function setup_ccache() {
 
 function additional_command() {
   if [ "$build_additional" = "y" ] || [ "$build_additional" = "Y" ]; then
-    "$build_additional_command"
+    $build_additional_command
   fi
 }
 
-function lunch() {
+function prepare_device() {
+  cd $rom_dir
   if [ "$rom_name" = "aex" ] || [ "$rom_name" = "ex" ]; then
     lunch aosp_"$device_codename"-userdebug
   else
@@ -472,6 +477,7 @@ function compile_rom() {
 
 function telegram_setup() {
   while :; do
+    branding
     echo
 		echo -e "${BLUE}Current TG Bot settings: ${NC}"
 		echo
@@ -492,8 +498,8 @@ function telegram_setup() {
 
 function tgbot_start() {
 	cd $tgbot_path
-	source $tgbot_path/bashbot.sh source
-	bash $tgbot_path/bashbot.sh start && use_tgbot="true"
+	source bashbot.sh start
+	bash bashbot.sh source && use_tgbot="true"
 	cd $script_dir
 }
 
@@ -540,7 +546,9 @@ function edit_tgbot_settings() {
 function send_tg_notification() {
 	if [ "$use_tgbot" = "true" ]; then
 		cd $tgbot_path
-		send_text ${tg_user_id} "markdown_parse_mode${tg_msg}"
+    source bashbot.sh start
+    source bashbot.sh source
+		send_text "$tg_user_id" "markdown_parse_mode${tg_msg}"
 	fi
 }
 
@@ -564,12 +572,12 @@ function build() {
   fi
   if [ "$build_sync" = "y" ]; then
     sync
-    cd ~/$rom_dir
+    cd $rom_dir
   fi
   if [ "$build_additional" = "y" ]; then
     additional_command
   fi
-  lunch
+  prepare_device
 
   # Build
   build_start=$(date +"%s")
@@ -586,22 +594,25 @@ function build() {
   build_end=$(date +"%s")
   diff=$(($build_end - $build_start))
   if [ "$result" = "0" ]; then
-    echo -e "\n${GREEN}(i)ROM compilation completed successfully"
-    echo -e "(i)Total time elapsed: $(($diff / 60)) minute(s) and $(($diff % 60)) seconds.${NC}"
-    tg_msg="*(i) ($rom_name) compilation completed successfully* | Total time elapsed: $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) seconds."
+    echo -e "\n${green}(i)ROM compilation completed successfully"
+    echo -e "(i)Total time elapsed: $(($diff / 60)) minute(s) and $(($diff % 60)) seconds.${nc}"
+    tg_msg="*(i) ($rom_name) compilation completed successfully* | Total time elapsed: $(($diff / 60)) minute(s) and $(($diff % 60)) seconds."
     send_tg_notification
     cd "$script_dir"
     upload
   else
-    echo -e "\n${RED}(!)ROM compilation failed"
-    echo -e "(i)Total time elapsed: $(($diff / 60)) minute(s) and $(($diff % 60)) seconds.${NC}"
-    tg_msg="*(!) ($rom_name) compilation failed* | Total time elapsed: $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) seconds."
+    echo -e "\n${red}(!)ROM compilation failed"
+    echo -e "(i)Total time elapsed: $(($diff / 60)) minute(s) and $(($diff % 60)) seconds.${nc}"
+    tg_msg="*(!) ($rom_name) compilation failed* | Total time elapsed: $(($diff / 60)) minute(s) and $(($diff % 60)) seconds."
     send_tg_notification
     cd "$script_dir"
   fi
 }
 
-
+function telegram_test() {
+  tg_msg="test"
+  send_tg_notification
+}
 
 
 
@@ -634,6 +645,7 @@ fi
 
 #TG Bot config
 #Autostart TGBot
+source $script_dir/tgbot_conf.txt
 cd $script_dir
 if [ "$tgbot_autostart" = "true" ]; then
 	tgbot_start
@@ -643,7 +655,5 @@ if [ ! -f $script_dir/tgbot_conf.txt ];then
 	echo -e "Creating tgbot_conf.txt..."
 	touch $script_dir/tgbot_conf.txt
 fi
-
-source $script_dir/tgbot_conf.txt
 
 start

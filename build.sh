@@ -34,8 +34,9 @@ function start() {
     echo -e "${green}You are on : ${nc}${red}$rom_name${nc}"
     echo -e "\n${cyan}[1] Setup${nc}"
     echo -e "\n${cyan}[2] Tools${nc}"
+    echo -e "\n${blue"}[3] Build${nc}"
     echo -e "\n${red}[Q] Quit${nc}"
-    echo -ne "\n${purple}(i)Please enter a choice[1-2/Q]:${nc}"
+    echo -ne "\n${purple}(i)Please enter a choice[1-2/B/Q]:${nc}"
 
     read choice
     case $choice in
@@ -549,6 +550,57 @@ function send_tg_file() {
 		send_file "${tg_user_id}" "$tg_file"
 	fi
 }
+
+function build() {
+  cd $rom_dir
+  source build/envsetup.sh
+  setup_ccache
+  if [ "$build_clean_command" = "installclean" ]; then
+    installclean
+    cd $rom_dir
+  elif [ "$build_clean_command" = "clobber" ]; then
+    clean
+    cd $rom_dir
+  fi
+  if [ "$build_sync" = "y" ]; then
+    sync
+    cd ~/$rom_dir
+  fi
+  if [ "$build_additional" = "y" ]; then
+    additional_command
+  fi
+  lunch
+
+  # Build
+  build_start=$(date +"%s")
+  date=`date`
+  echo -e "$rom_name build started at $date"
+  tg_msg="$rom_name build started at \`$date\`"
+  send_tg_notification
+  cd $rom_dir
+  compile_rom
+  result="$?"
+	echo $result > $script_dir/tmp
+  result=$(cat $script_dir/tmp)
+  rm -f $script_dir/tmp
+  build_end=$(date +"%s")
+  diff=$(($build_end - $build_start))
+  if [ "$result" = "0" ]; then
+    echo -e "\n${GREEN}(i)ROM compilation completed successfully"
+    echo -e "(i)Total time elapsed: $(($diff / 60)) minute(s) and $(($diff % 60)) seconds.${NC}"
+    tg_msg="*(i) ($rom_name) compilation completed successfully* | Total time elapsed: $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) seconds."
+    send_tg_notification
+    cd "$script_dir"
+    upload
+  else
+    echo -e "\n${RED}(!)ROM compilation failed"
+    echo -e "(i)Total time elapsed: $(($diff / 60)) minute(s) and $(($diff % 60)) seconds.${NC}"
+    tg_msg="*(!) ($rom_name) compilation failed* | Total time elapsed: $(($DIFF / 60)) minute(s) and $(($DIFF % 60)) seconds."
+    send_tg_notification
+    cd "$script_dir"
+  fi
+}
+
 
 
 

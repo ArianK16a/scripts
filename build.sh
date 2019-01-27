@@ -100,7 +100,7 @@ function setup_rom() {
   echo -e "\nSave Settings? [y/n] : "
   read save_setup_rom
   if [ "$save_setup_rom" = "y" ] || [ "$save_setup_rom" = "Y" ]; then
-    echo "\ncleaning currect Config"
+    echo "\nCleaning currect Config"
     sed --in-place '/device_codename/d' $script_dir/${curr_conf}
     sed --in-place '/rom_name/d' $script_dir/${curr_conf}
     sed --in-place '/rom_dir/d' $script_dir/${curr_conf}
@@ -120,7 +120,7 @@ function setup_build() {
   echo "Setup - Build"
   echo -ne "\nSync the repo before build? [y/n] : "
   read build_sync
-  echo -ne "\nclean the out before build? [y/n] : "
+  echo -ne "\nClean the out before build? [y/n] : "
   read build_clean
   if [ "$build_clean" = "y" ]; then
    echo -ne "    [1]installclean or [2]clobber? : "
@@ -169,7 +169,7 @@ function setup_build() {
   read save_setup_build
 
   if [ "$save_setup_build" = "y" ] || [ "$save_setup_build" = "Y" ]; then
-    echo "\ncleaning currect Config"
+    echo "\nCleaning currect Config"
     sed --in-place '/build_sync/d' $script_dir/${curr_conf}
     sed --in-place '/build_clean/d' $script_dir/${curr_conf}
     sed --in-place '/build_clean_command/d' $script_dir/${curr_conf}
@@ -389,7 +389,7 @@ function upload() {
       sshpass -p "$sf_pass" scp "$zip_path" "$sf_user"@frs.sourceforge.net:/home/frs/project/"$sf_project"/"$sf_path"
     fi
     sflink="https://sourceforge.net/projects/$sf_project/files/$sf_path/$zip_name/download"
-    tg_msg="*$zip_name is up!* It can be downloaded [here]($sflink)"
+    tg_msg="*$zip_name is up!* It can be downloaded [here]($sflink) in few minutes!"
     send_tg_notification
     cd $script_dir
   elif [ "$upload" = "mega" ]; then
@@ -485,12 +485,6 @@ function compile_rom() {
   else
     brunch $device_codename
   fi
-  zip_name=$"AospExtended-$(EXTENDED_VERSION)-$(TARGET_DEVICE)-$(EXTENDED_BUILD_DATE)-$(EXTENDED_BUILD_TYPE).zip"
-  zip_path="$OUT/$zip_name"
-
-  echo "zip_name=$zip_name"
-  echo "zip_path=$zip_path"
-
 }
 
 function telegram_setup() {

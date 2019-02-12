@@ -368,9 +368,7 @@ function setup_upload() {
 function upload() {
   cd $rom_dir
   source "$script_dir"/${curr_conf}
-  date=$(date '+%Y%m')
-  zip_path=$(ls $OUT/*.zip | grep "$date")
-  zip_name=$(basename "$zip_path")
+  set_out
   echo "zip_path=$zip_path"
   echo "zip_name=$zip_name"
 
@@ -435,6 +433,7 @@ function tools() {
     echo -e "${red}[3] make clean${nc}"
     echo -e "${green}[4] Test telegram${nc}"
     echo -e "${cyan}[5] Upload${nc}"
+    echo -e "${yellow}[6] Push the rom to /sdcard via adb"
     echo -e "\n${blue}[Q] Quit${nc}"
     echo -ne "${purple}[1-5/Q] : ${nc}"
     read choice_tools
@@ -444,6 +443,7 @@ function tools() {
       3 ) clean;;
       4 ) telegram_test;;
       5 ) upload;;
+      6 ) push_rom_adb;;
       q | Q ) start;;
     esac
   done
@@ -617,13 +617,24 @@ function build() {
     echo -e "(i)Total time elapsed: $(($diff / 60)) minute(s) and $(($diff % 60)) seconds.${nc}"
     tg_msg="*(!) ($rom_name) compilation failed* | Total time elapsed: $(($diff / 60)) minute(s) and $(($diff % 60)) seconds."
     send_tg_notification
-    cd "$script_dir"
+    exit 0
   fi
 }
 
 function telegram_test() {
   tg_msg="test"
   send_tg_notification
+}
+
+function push_rom_adb() {
+  set_out
+  adb push "$zip_path" /sdcard
+}
+
+function set_out() {
+  date=$(date '+%Y%m')
+  zip_path=$(ls $OUT/*.zip | grep "$date")
+  zip_name=$(basename "$zip_path")
 }
 
 

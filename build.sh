@@ -42,6 +42,7 @@ function start() {
     case $choice in
         1 ) setup;;
         2 ) tools;;
+        3 ) push_ota;;
         b | B ) build;;
         Q | q )
           clear
@@ -394,7 +395,7 @@ function upload() {
     echo -e "$zip_name is uploading to mega.nz"
     tg_msg="$zip_name is uploading to mega.nz"
     send_tg_notification
-    cd ~/$rom_dir
+    cd $rom_dir
     mega-login "$mega_user" "$mega_pass"
     mega-put $zip_path /$mega_path
     megaout=$(mega-export -a /$mega_path/$zip_name)
@@ -435,7 +436,7 @@ function tools() {
     echo -e "${cyan}[5] Upload${nc}"
     echo -e "${yellow}[6] Push the rom to /sdcard via adb"
     echo -e "\n${blue}[Q] Quit${nc}"
-    echo -ne "${purple}[1-5/Q] : ${nc}"
+    echo -ne "${purple}[1-6/Q] : ${nc}"
     read choice_tools
     case $choice_tools in
       1 ) sync;;
@@ -633,8 +634,41 @@ function push_rom_adb() {
 
 function set_out() {
   date=$(date '+%Y%m')
+  timestamp="$(date +%s)"
   zip_path=$(ls $OUT/*.zip | grep "$date")
   zip_name=$(basename "$zip_path")
+  zip_md5="$(cat $zip_path.md5sum | awk '{print $1}')"
+  zip_size="$(ls -l "$zip_path" | awk '{print $5}')"
+}
+
+function push_ota() {
+  cd $rom_dir
+  echo "$LOCAL_PATH"
+  source "$script_dir"/${curr_conf}
+  set_out
+  sflink="https://sourceforge.net/projects/$sf_project/files/$sf_path/$zip_name/download"
+  cd OTA
+  git add -A && git stash && git reset
+  git fetch git@github.com:ArianK16a/OTA.git
+  git checkout FETCH_HEAD
+  rm "$device_codename".json
+  echo"$ls"
+  echo -e "{
+  \"response\": [
+    {
+      \"datetime\": \"$timestamp\",
+      \"filename\": \"$zip_name\",
+      \"id\": \"$zip_md5\",
+      \"romtype\": \"UNOFFICIAL\",
+      \"size\": \"$zip_size\",
+      \"url\": \"$sflink\",
+      \"version\": \"16.0\"
+    }
+  ]
+}" > "$device_codename".json
+git add "$device_codename".json
+git commit -S -m "$device_codename: Automatically OTA update"
+git push git@github.com:ArianK16a/OTA.git HEAD:lineage
 }
 
 

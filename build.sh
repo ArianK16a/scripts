@@ -693,6 +693,7 @@ function compile_rom_signed() {
   LINEAGE_VERSION=$(echo "$LINEAGE_VERSION")
   mka target-files-package otatools
   croot
+  export ANDROID_PW_FILE=$keys_password_file
   ./build/tools/releasetools/sign_target_files_apks -o -d ~/.android-certs \
     $OUT/obj/PACKAGING/target_files_intermediates/*-target_files-*.zip \
     signed-target_files.zip
@@ -700,31 +701,9 @@ function compile_rom_signed() {
     --block --backup=true \
     signed-target_files.zip \
     signed-ota_update.zip
-  LINEAGE_TARGET_PACKAGE_NAME_SIGNED="lineage-$(LINEAGE_VERSION)-signed.zip"
+  LINEAGE_TARGET_PACKAGE_NAME_SIGNED="lineage-$LINEAGE_VERSION-signed.zip"
   mv $rom_dir/signed-ota_update.zip $OUT/$LINEAGE_TARGET_PACKAGE_NAME_SIGNED
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # Prepare the script
 if [ -f $script_dir/script_conf.txt ]; then

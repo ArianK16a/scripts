@@ -288,7 +288,7 @@ function setup_upload() {
     echo -ne "\nUpload to Sourceforge [1] or Mega [2] : "
     read upload_provider
   elif [ "$upload_wish" = "n" ] || [ "$upload_wish" = "N" ]; then
-    sed --in-place '/upload/d' $script_dir/${curr_conf}
+    sed --in-place '/upload_wish/d' $script_dir/${curr_conf}
     echo "upload_wish=$upload_wish" >> $script_dir/${curr_conf}
   fi
   if [ "$upload_provider" = "1" ]; then
@@ -304,6 +304,8 @@ function setup_upload() {
     read sf_project
     echo -ne "\nWhere should the File get placed? : "
     read sf_path
+    echo -ne "\nDo you want automated OTA updates? : "
+    read build_push_ota
 
     echo -e "${RED}Review your Settings!${nc}"
     echo -e "Username=$sf_user"
@@ -314,6 +316,7 @@ function setup_upload() {
     fi
     echo -e "sf_project=$sf_project"
     echo -e "sf_path=$sf_path"
+    echo -e "OTA update=$build_push_ota"
 
     echo -ne "${blue}Do you want to save this? [y/n] : ${nc}"
     read save_setup_sf
@@ -330,8 +333,10 @@ function setup_upload() {
       fi
       echo "sf_project=$sf_project" >> $script_dir/${curr_conf}
       echo "sf_path=$sf_path" >> $script_dir/${curr_conf}
+      sed --in-place '/OTA/d' $script_dir/${curr_conf}
+      echo "build_push_ota=$build_push_ota" >> $script_dir/${curr_conf}
     else
-      echo "Settings don't changed!"
+      echo "Settings not changed!"
       source $script_dir/${curr_conf}
     fi
   fi
@@ -391,6 +396,9 @@ function upload() {
     tg_msg="*$zip_name is up!* It can be downloaded [here]($sflink) in few minutes!"
     send_tg_notification
     cd $script_dir
+    if [ "$ota" = "y" ]; then
+      push_ota
+    fi
   elif [ "$upload" = "mega" ]; then
     echo -e "$zip_name is uploading to mega.nz"
     tg_msg="$zip_name is uploading to mega.nz"
@@ -599,7 +607,11 @@ function build() {
   tg_msg="$rom_name build started at \`$date\`"
   send_tg_notification
   cd $rom_dir
-  compile_rom
+  if [ "$target_build_signed" = "y"]; then
+    compile_rom_signed
+  else
+    compile_rom
+  fi
   result="$?"
 	echo $result > $script_dir/tmp
   result=$(cat $script_dir/tmp)
@@ -633,17 +645,17 @@ function push_rom_adb() {
 }
 
 function set_out() {
-  date=$(date '+%Y%m')
+  date="$(date '+%Y%m')"
   timestamp="$(date +%s)"
-  zip_path=$(ls $OUT/*.zip | grep "$date")
-  zip_name=$(basename "$zip_path")
+  zip_path_old="$(ls $OUT/*.zip | grep "$date" | grep "$device_codename")"
+  zip_path="$(realpath $zip_path_old)"
+  zip_name="$(basename "$zip_path")"
   zip_md5="$(cat $zip_path.md5sum | awk '{print $1}')"
   zip_size="$(ls -l "$zip_path" | awk '{print $5}')"
 }
 
 function push_ota() {
   cd $rom_dir
-  echo "$LOCAL_PATH"
   source "$script_dir"/${curr_conf}
   set_out
   sflink="https://sourceforge.net/projects/$sf_project/files/$sf_path/$zip_name/download"
@@ -666,10 +678,48 @@ function push_ota() {
     }
   ]
 }" > "$device_codename".json
-git add "$device_codename".json
-git commit -S -m "$device_codename: Automatically OTA update"
-git push git@github.com:ArianK16a/OTA.git HEAD:lineage
+  git add "$device_codename".json
+  git commit -S -m "$device_codename: Automatically OTA update"
+  git push git@github.com:ArianK16a/OTA.git HEAD:lineage
+  cd $script_dir
 }
+
+function compile_rom_signed() {
+  cd $rom_dir
+  prepare_device
+  breakfast $device_codename
+  mka target-files-package otatools
+  croot
+  ./build/tools/releasetools/sign_target_files_apks -o -d ~/.android-certs \
+    $OUT/obj/PACKAGING/target_files_intermediates/*-target_files-*.zip \
+    signed-target_files.zip
+  ./build/tools/releasetools/ota_from_target_files -k ~/.android-certs/releasekey \
+    --block --backup=true \
+    signed-target_files.zip \
+    signed-ota_update.zip
+  LINEAGE_TARGET_PACKAGE_NAME_SIGNED=$lineage-$(LINEAGE_VERSION)-signed.zip
+  mv $rom_dir/signed-ota_update.zip $OUT/$LINEAGE_TARGET_PACKAGE_NAME_SIGNED
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

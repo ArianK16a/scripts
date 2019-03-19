@@ -607,7 +607,7 @@ function build() {
   tg_msg="$rom_name build started at \`$date\`"
   send_tg_notification
   cd $rom_dir
-  if [ "$target_build_signed" = "y"]; then
+  if [ "$target_build_signed" = "y" ]; then
     compile_rom_signed
   else
     compile_rom
@@ -687,7 +687,8 @@ function push_ota() {
 function compile_rom_signed() {
   cd $rom_dir
   prepare_device
-  breakfast $device_codename
+  export $(breakfast $device_codename | grep LINEAGE_VERSION)
+  LINEAGE_VERSION=$(echo "$LINEAGE_VERSION")
   mka target-files-package otatools
   croot
   ./build/tools/releasetools/sign_target_files_apks -o -d ~/.android-certs \
@@ -697,7 +698,7 @@ function compile_rom_signed() {
     --block --backup=true \
     signed-target_files.zip \
     signed-ota_update.zip
-  LINEAGE_TARGET_PACKAGE_NAME_SIGNED=$lineage-$(LINEAGE_VERSION)-signed.zip
+  LINEAGE_TARGET_PACKAGE_NAME_SIGNED="lineage-$(LINEAGE_VERSION)-signed.zip"
   mv $rom_dir/signed-ota_update.zip $OUT/$LINEAGE_TARGET_PACKAGE_NAME_SIGNED
 }
 

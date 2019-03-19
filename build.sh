@@ -703,6 +703,8 @@ function compile_rom_signed() {
     signed-ota_update.zip
   LINEAGE_TARGET_PACKAGE_NAME_SIGNED="lineage-$LINEAGE_VERSION-signed.zip"
   mv $rom_dir/signed-ota_update.zip $OUT/$LINEAGE_TARGET_PACKAGE_NAME_SIGNED
+  set_out
+  md5sum $zip_path | awk '{print $1}' > "$zip_path".md5sum
 }
 
 # Prepare the script

@@ -624,7 +624,9 @@ function build() {
     tg_msg="*(i) ($rom_name) compilation completed successfully* | Total time elapsed: $(($diff / 60)) minute(s) and $(($diff % 60)) seconds."
     send_tg_notification
     cd "$script_dir"
-    upload
+    if [ "$upload_wish" = "y" ]; then
+      upload
+    fi
   else
     echo -e "\n${red}(!)ROM compilation failed"
     echo -e "(i)Total time elapsed: $(($diff / 60)) minute(s) and $(($diff % 60)) seconds.${nc}"

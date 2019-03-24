@@ -384,7 +384,7 @@ function upload() {
   send_tg_file
   if [ "$upload" = "sf" ]; then
     echo -e "Uploading to $sf_project/$sf_path on sourceforge"
-    tg_msg="$zip_name is uploading to $sf_project/$sf_path on sourceforge"
+    tg_msg="*$zip_name* is uploading to $sf_project/$sf_path on sourceforge"
     send_tg_notification
     cd $rom_dir
     if [ "$ssh_keys" = "y" ] || [ "$ssh_keys" = "Y" ]; then
@@ -483,6 +483,8 @@ function prepare_device() {
   cd $rom_dir
   if [ "$rom_name" = "aex" ] || [ "$rom_name" = "ex" ]; then
     lunch aosp_"$device_codename"-userdebug
+  elif [ "$rom_name" = "lineage"] || [ "$rom_name" = "lineage-z3c" ]; then
+    breakfast $device_codename
   else
     lunch "$rom_name"_"$device_codename"-userdebug
   fi

@@ -483,7 +483,7 @@ function prepare_device() {
   cd $rom_dir
   if [ "$rom_name" = "aex" ] || [ "$rom_name" = "ex" ]; then
     lunch aosp_"$device_codename"-userdebug
-  elif [ "$rom_name" = "lineage"] || [ "$rom_name" = "lineage-z3c" ]; then
+  elif [ "$rom_name" = "lineage" ] || [ "$rom_name" = "lineage-z3c" ]; then
     breakfast $device_codename
   else
     lunch "$rom_name"_"$device_codename"-userdebug
@@ -694,19 +694,22 @@ function compile_rom_signed() {
   export $(breakfast $device_codename | grep LINEAGE_VERSION)
   LINEAGE_VERSION=$(echo "$LINEAGE_VERSION")
   mka target-files-package otatools
-  croot
-  export ANDROID_PW_FILE=$keys_password_file
-  ./build/tools/releasetools/sign_target_files_apks -o -d ~/.android-certs \
-    $OUT/obj/PACKAGING/target_files_intermediates/*-target_files-*.zip \
-    signed-target_files.zip
-  ./build/tools/releasetools/ota_from_target_files -k ~/.android-certs/releasekey \
-    --block --backup=true \
-    signed-target_files.zip \
-    signed-ota_update.zip
-  LINEAGE_TARGET_PACKAGE_NAME_SIGNED="lineage-$LINEAGE_VERSION-signed.zip"
-  mv $rom_dir/signed-ota_update.zip $OUT/$LINEAGE_TARGET_PACKAGE_NAME_SIGNED
-  set_out
-  md5sum $zip_path | awk '{print $1}' > "$zip_path".md5sum
+  result="$?"
+  if [ "$result" = 0 ]; then
+    croot
+    export ANDROID_PW_FILE=$keys_password_file
+    ./build/tools/releasetools/sign_target_files_apks -o -d ~/.android-certs \
+      $OUT/obj/PACKAGING/target_files_intermediates/*-target_files-*.zip \
+      signed-target_files.zip
+    ./build/tools/releasetools/ota_from_target_files -k ~/.android-certs/releasekey \
+      --block --backup=true \
+      signed-target_files.zip \
+      signed-ota_update.zip
+    LINEAGE_TARGET_PACKAGE_NAME_SIGNED="lineage-$LINEAGE_VERSION-signed.zip"
+    mv $rom_dir/signed-ota_update.zip $OUT/$LINEAGE_TARGET_PACKAGE_NAME_SIGNED
+    set_out
+    md5sum $zip_path | awk '{print $1}' > "$zip_path".md5sum
+  fi
 }
 
 # Prepare the script

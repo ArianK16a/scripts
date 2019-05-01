@@ -605,8 +605,8 @@ function build() {
   # Build
   build_start=$(date +"%s")
   date=`date`
-  echo -e "$rom_name build started at $date"
-  tg_msg="$rom_name build started at \`$date\`"
+  echo -e "$rom_name build started at $date on $HOSTNAME"
+  tg_msg="$rom_name build started at \`$date\` on  \`$HOSTNAME\`"
   send_tg_notification
   cd $rom_dir
   if [ "$target_build_signed" = "y" ]; then
@@ -623,7 +623,7 @@ function build() {
   if [ "$result" = "0" ]; then
     echo -e "\n${green}(i)ROM compilation completed successfully"
     echo -e "(i)Total time elapsed: $(($diff / 60)) minute(s) and $(($diff % 60)) seconds.${nc}"
-    tg_msg="*(i) ($rom_name) compilation completed successfully* | Total time elapsed: $(($diff / 60)) minute(s) and $(($diff % 60)) seconds."
+    tg_msg="*(i) ($rom_name) compilation completed successfully on \`$HOSTNAME\`* | Total time elapsed: $(($diff / 60)) minute(s) and $(($diff % 60)) seconds."
     send_tg_notification
     cd "$script_dir"
     if [ "$upload_wish" = "y" ]; then
@@ -632,7 +632,7 @@ function build() {
   else
     echo -e "\n${red}(!)ROM compilation failed"
     echo -e "(i)Total time elapsed: $(($diff / 60)) minute(s) and $(($diff % 60)) seconds.${nc}"
-    tg_msg="*(!) ($rom_name) compilation failed* | Total time elapsed: $(($diff / 60)) minute(s) and $(($diff % 60)) seconds."
+    tg_msg="*(!) ($rom_name) compilation failed on \`$HOSTNAME\` * | Total time elapsed: $(($diff / 60)) minute(s) and $(($diff % 60)) seconds."
     send_tg_notification
     exit 0
   fi

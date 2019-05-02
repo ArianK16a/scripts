@@ -650,6 +650,7 @@ function push_rom_adb() {
 }
 
 function set_out() {
+  cd $rom_dir
   date="$(date '+%Y%m')"
   timestamp="$(date +%s)"
   zip_path_old="$(ls $OUT/*.zip | grep "$date" | grep "$device_codename")"

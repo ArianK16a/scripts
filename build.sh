@@ -683,7 +683,7 @@ function push_ota() {
   ]
 }" > "$device_codename".json
   git add "$device_codename".json
-  git commit -S -m "$device_codename: Automatically OTA update"
+  git commit -S -m "$device_codename: Automatic OTA update"
   git push git@github.com:ArianK16a/OTA.git HEAD:lineage
   cd $script_dir
 }

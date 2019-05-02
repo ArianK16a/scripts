@@ -623,7 +623,7 @@ function build() {
   if [ "$result" = "0" ]; then
     echo -e "\n${green}(i)ROM compilation completed successfully"
     echo -e "(i)Total time elapsed: $(($diff / 60)) minute(s) and $(($diff % 60)) seconds.${nc}"
-    tg_msg="*(i) ($rom_name) compilation completed successfully on \`$HOSTNAME\`* | Total time elapsed: $(($diff / 60)) minute(s) and $(($diff % 60)) seconds."
+    tg_msg="*(i) ($rom_name) compilation completed successfully on *\`$HOSTNAME\` | Total time elapsed: $(($diff / 60)) minute(s) and $(($diff % 60)) seconds."
     send_tg_notification
     cd "$script_dir"
     if [ "$upload_wish" = "y" ]; then

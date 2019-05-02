@@ -374,6 +374,7 @@ function setup_upload() {
 function upload() {
   cd $rom_dir
   source "$script_dir"/${curr_conf}
+  prepare_device
   set_out
   echo "zip_path=$zip_path"
   echo "zip_name=$zip_name"

@@ -617,6 +617,11 @@ function build() {
   else
     compile_rom
   fi
+  if [ "$result" = "0" ]; then
+    if [ "$upload_wish" = "y" ]; then
+      upload
+    fi
+  fi
 }
 
 function build_result() {
@@ -629,9 +634,6 @@ function build_result() {
     tg_msg="*(i) ($rom_name) compilation completed successfully on *\`$HOSTNAME\` | Total time elapsed: $(($diff / 60)) minute(s) and $(($diff % 60)) seconds."
     send_tg_notification
     cd "$script_dir"
-    if [ "$upload_wish" = "y" ]; then
-      upload
-    fi
   else
     echo -e "\n${red}(!)ROM compilation failed"
     echo -e "(i)Total time elapsed: $(($diff / 60)) minute(s) and $(($diff % 60)) seconds.${nc}"

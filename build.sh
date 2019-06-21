@@ -482,6 +482,7 @@ function additional_command() {
 
 function prepare_device() {
   cd $rom_dir
+  source build/envsetup.sh
   if [ "$rom_name" = "aex" ] || [ "$rom_name" = "ex" ]; then
     lunch aosp_"$device_codename"-userdebug
   elif [ "$rom_name" = "lineage" ] || [ "$rom_name" = "lineage-z3c" ]; then
@@ -497,6 +498,7 @@ function compile_rom() {
   else
     brunch $device_codename
   fi
+  build_result
 }
 
 function telegram_setup() {
@@ -615,10 +617,10 @@ function build() {
   else
     compile_rom
   fi
-  result="$?"
-	echo $result > $script_dir/tmp
-  result=$(cat $script_dir/tmp)
-  rm -f $script_dir/tmp
+}
+
+function build_result() {
+  result=$(echo $?)
   build_end=$(date +"%s")
   diff=$(($build_end - $build_start))
   if [ "$result" = "0" ]; then
@@ -633,7 +635,7 @@ function build() {
   else
     echo -e "\n${red}(!)ROM compilation failed"
     echo -e "(i)Total time elapsed: $(($diff / 60)) minute(s) and $(($diff % 60)) seconds.${nc}"
-    tg_msg="*(!) ($rom_name) compilation failed on \`$HOSTNAME\` * | Total time elapsed: $(($diff / 60)) minute(s) and $(($diff % 60)) seconds."
+    tg_msg="*(!) ($rom_name) compilation failed on *\`$HOSTNAME\` | Total time elapsed: $(($diff / 60)) minute(s) and $(($diff % 60)) seconds."
     send_tg_notification
     exit 0
   fi
@@ -696,7 +698,8 @@ function compile_rom_signed() {
   export $(breakfast $device_codename | grep LINEAGE_VERSION)
   LINEAGE_VERSION=$(echo "$LINEAGE_VERSION")
   mka target-files-package otatools
-  result="$?"
+  build_result
+  result=$(echo $?)
   if [ "$result" = 0 ]; then
     croot
     export ANDROID_PW_FILE=$keys_password_file

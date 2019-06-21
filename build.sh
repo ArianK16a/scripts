@@ -699,9 +699,12 @@ function compile_rom_signed() {
   LINEAGE_VERSION=$(echo "$LINEAGE_VERSION")
   mka target-files-package otatools
   build_result
-  result=$(echo $?)
   if [ "$result" = 0 ]; then
     croot
+    echo -e "Signing of $rom_name on $HOSTNAME started"
+    tg_msg="*(i) Signing of \`$rom_name\` on \`$HOSTNAME\` started"
+    send_tg_notification
+
     export ANDROID_PW_FILE=$keys_password_file
     ./build/tools/releasetools/sign_target_files_apks -o -d ~/.android-certs \
       $OUT/obj/PACKAGING/target_files_intermediates/*-target_files-*.zip \
@@ -712,6 +715,9 @@ function compile_rom_signed() {
       signed-ota_update.zip
     LINEAGE_TARGET_PACKAGE_NAME_SIGNED="lineage-$LINEAGE_VERSION-signed.zip"
     mv $rom_dir/signed-ota_update.zip $OUT/$LINEAGE_TARGET_PACKAGE_NAME_SIGNED
+    echo -e "Signing of $LINEAGE_TARGET_PACKAGE_NAME_SIGNED on $HOSTNAME finished"
+    tg_msg="*(i) Signing of \`$LINEAGE_TARGET_PACKAGE_NAME_SIGNED\` on \`$HOSTNAME\` finished"
+    send_tg_notification
     set_out
     md5sum $zip_path | awk '{print $1}' > "$zip_path".md5sum
   fi

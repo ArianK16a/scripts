@@ -444,8 +444,9 @@ function tools() {
     echo -e "${green}[4] Test telegram${nc}"
     echo -e "${cyan}[5] Upload${nc}"
     echo -e "${yellow}[6] Push the rom to /sdcard via adb"
+    echo -e "${red}[7] Sideload the rom via adb"
     echo -e "\n${blue}[Q] Quit${nc}"
-    echo -ne "${purple}[1-6/Q] : ${nc}"
+    echo -ne "${purple}[1-7/Q] : ${nc}"
     read choice_tools
     case $choice_tools in
       1 ) sync;;
@@ -454,6 +455,7 @@ function tools() {
       4 ) telegram_test;;
       5 ) upload;;
       6 ) push_rom_adb;;
+      7 ) sideload_rom_adb;;
       q | Q ) start;;
     esac
   done
@@ -651,6 +653,11 @@ function telegram_test() {
 function push_rom_adb() {
   set_out
   adb push "$zip_path" /sdcard
+}
+
+function sideload_rom_adb() {
+  set_out
+  adb sideload "$zip_path"
 }
 
 function set_out() {

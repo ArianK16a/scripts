@@ -706,7 +706,7 @@ function compile_rom_signed() {
     echo -e "Signing of $rom_name on $HOSTNAME started"
     tg_msg="*(i) Signing of \`$rom_name\` on \`$HOSTNAME\` started"
     send_tg_notification
-
+    cd $rom_dir
     export ANDROID_PW_FILE=$keys_password_file
     ./build/tools/releasetools/sign_target_files_apks -o -d ~/.android-certs \
       $OUT/obj/PACKAGING/target_files_intermediates/*-target_files-*.zip \
